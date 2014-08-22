@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/GridRef" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
