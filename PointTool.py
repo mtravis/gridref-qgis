@@ -32,7 +32,7 @@ class PointTool(QgsMapTool):
         coords = point.toString()
         print coords
         easting = int(coords[0:6])
-        northing = int(coords[15:20])
+        northing = int(coords[15:21])
         #f = urllib.urlopen("http://gridref.longwayaround.org.uk/convert/%s?figures=4" % coords)
         #f.geturl() # Prints the final URL with parameters.
         #gridref = f.read() # Prints the contents
