@@ -21,7 +21,6 @@ class PointTool(QgsMapTool):
 
         point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
         
-
     def canvasReleaseEvent(self, event):
         #Get the click
         x = event.pos().x()
@@ -29,19 +28,27 @@ class PointTool(QgsMapTool):
         bbox = QgsRectangle(4999.99,4999.69,660000.06,1225000.12)
         #espg = self.canvas.mapRenderer().destinationCrs().authid()
         point = self.canvas.getCoordinateTransform().toMapCoordinates(x, y)
+        
         coords = point.toString()
-        print coords
-        easting = int(coords[0:6])
-        northing = int(coords[15:21])
+        
+        # print coords
+        # easting = int(coords[0:6])
+        # northing = int(coords[15:21])
+        
+        # See https://docs.python.org/2/library/string.html
+        easting = float( coords.split(',')[0].strip() )
+        northing = float( coords.split(',')[1].strip() )
+        
         #f = urllib.urlopen("http://gridref.longwayaround.org.uk/convert/%s?figures=4" % coords)
         #f.geturl() # Prints the final URL with parameters.
         #gridref = f.read() # Prints the contents
-        os_ref = xy_to_osgb(easting,northing)
+        os_ref = xy_to_osgb(easting,northing, 10)
         print os_ref
         if bbox.contains(point):
-            QMessageBox.information(None,"Info", "Grid Ref: " + os_ref)
+            QApplication.clipboard().setText(os_ref)
+            QMessageBox.information(None, "OS Grid Reference", "Grid Ref: " + os_ref + "\n\nCopied to clipboard")
         else:
-            QMessageBox.information(None,"Error", "Point out of bounds")
+            QMessageBox.information(None, "OS Grid Reference", "Point out of bounds")
 
     
         
