@@ -28,6 +28,7 @@ import resources_rc
 from grid_ref_dialog import GridRefDialog
 import os.path
 from PointTool import *
+from xy_to_osgb import xy_to_osgb
 
 
 class GridRef:
@@ -68,7 +69,7 @@ class GridRef:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'GridRef')
         self.toolbar.setObjectName(u'GridRef')
-
+        
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -95,6 +96,7 @@ class GridRef:
         add_to_toolbar=True,
         status_tip=None,
         whats_this=None,
+        shortcut=None,
         parent=None):
         """Add a toolbar icon to the InaSAFE toolbar.
 
@@ -149,11 +151,14 @@ class GridRef:
         if add_to_toolbar:
             self.toolbar.addAction(action)
 
+        if shortcut:
+            action.setShortcut(shortcut)
+        
         if add_to_menu:
             self.iface.addPluginToMenu(
                 self.menu,
                 action)
-
+        
         self.actions.append(action)
 
         return action
@@ -167,8 +172,24 @@ class GridRef:
             text=self.tr(u'Grid Ref '),
             callback=self.run,
             parent=self.iface.mainWindow())
+        
+        self.add_action(
+            icon_path,
+            text=self.tr(u'Grid Ref Keyboard Shortcut'),
+            callback=self.run_keyboard,
+            add_to_menu=True,
+            add_to_toolbar=False,
+            shortcut=QKeySequence(Qt.Key_F2),
+            parent=self.iface.mainWindow())
+        
+        # Keep track of the mouse position through QgsMapCanvas.xyCoordinates(p)
+        # self.connect(self.iface.maoCanvas(), 'xyCoordinates(QgsPoint)', self.trackCoords )
+        self.iface.mapCanvas().xyCoordinates.connect(self.trackCoords)
 
-
+    def trackCoords(self, p):
+        self.x = p.x()
+        self.y = p.y()
+    
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -176,17 +197,37 @@ class GridRef:
                 self.tr(u'&GridRef'),
                 action)
             self.iface.removeToolBarIcon(action)
+        
+        # self.disconnect(self.iface.maoCanvas(), 'xyCoordinates(QgsPoint)', self.trackCoords )
+        self.iface.mapCanvas().xyCoordinates.disconnect(self.trackCoords)
 
 
     def run(self):
         """Run method that performs all the real work"""
         # show the dialog
-        self.dlg.show()
+        #self.dlg.show()
         # Run the dialog event loop
-        result = self.dlg.exec_()
+        #result = self.dlg.exec_()
         # See if OK was pressed
-        if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            tool = PointTool(self.iface.mapCanvas())
-            self.iface.mapCanvas().setMapTool(tool)
+        #if result:
+        #    # Do something useful here - delete the line containing pass and
+        #    # substitute with your code.
+        tool = PointTool(self.iface.mapCanvas())
+        self.iface.mapCanvas().setMapTool(tool)
+        
+    def run_keyboard(self):
+        """ This is the function called by the action assigned to a 
+        keyboard shortcut.  It will determine the position of the mouse 
+        cursor on the canvas, determine the OS GB grid reference and 
+        copy the result to the clipboard.  
+        
+        If the coordinate reference system is not 27700 or the coord is 
+        out of the expected range then a sensible error message will be 
+        copied to the clipboard. """
+        
+        os_ref = xy_to_osgb(self.x, self.y)
+        # QMessageBox.information(None, "Info", "Grid Ref: " + os_ref)
+        QApplication.clipboard().setText(os_ref)
+        self.iface.messageBar().pushMessage("Grid reference copied to clipboard.", duration=1)
+        
+        
