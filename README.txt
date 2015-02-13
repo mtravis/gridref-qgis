@@ -1,11 +1,11 @@
-QGIS Plugin that takes map coordinates and returns a OSGB Grid Ref e.g. SX4855 
+QGIS Plugin that takes map coordinates and returns a OSGB Grid Ref e.g. SX 7511 8607
 
-The plugin makes use of Matt Walker's GridRef web service: https://github.com/walkermatt/gridref-web 
+The plugin was inspired by Matt Walker's GridRef web service: https://github.com/walkermatt/gridref-web and makes use of xy_to_osgb.py A library of functions for converting eastings and 
+northings to OS Grid References supplied by Peter Wells of Lutra Consulting
 
-Only works with the EPSG:27700 projection
+Only works with the EPSG:27700 CRS
 
 TODO
 
-Make use of Message Bar instead of box
-Add user defined input to retrieve different Grid refs
+Add easting and northings to output.
 
