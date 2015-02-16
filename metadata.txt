@@ -9,7 +9,7 @@
 [general]
 name=OSGB Grid Ref
 qgisMinimumVersion=2.0
-description=This plugin takes the coords of the map canvas and translates to an Ordnance Survey Grid Reference e.g. SX4855
+description=This plugin takes the coords of the map canvas and translates to an Ordnance Survey Grid Reference e.g. SX 7511 8607
 version=0.2
 author=Matt Travis
 email=matt.travis1@gmail.com
