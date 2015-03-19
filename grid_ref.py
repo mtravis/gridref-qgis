@@ -28,7 +28,7 @@ import resources_rc
 from grid_ref_dialog import GridRefDialog
 import os.path
 from PointTool import *
-from xy_to_osgb import xy_to_osgb
+from xy_to_osgb import xy_to_osgb, osgb_to_xy
 
 
 class GridRef:
@@ -97,6 +97,7 @@ class GridRef:
         status_tip=None,
         whats_this=None,
         shortcut=None,
+        checkable=None,
         parent=None):
         """Add a toolbar icon to the InaSAFE toolbar.
 
@@ -153,6 +154,9 @@ class GridRef:
 
         if shortcut:
             action.setShortcut(shortcut)
+
+        if checkable:
+            action.setCheckable(True)
         
         if add_to_menu:
             self.iface.addPluginToMenu(
@@ -167,10 +171,11 @@ class GridRef:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         icon_path = ':/plugins/GridRef/icon.png'
-        self.add_action(
+        self.actionRun = self.add_action(
             icon_path,
-            text=self.tr(u'Grid Ref '),
+            text=self.tr(u'Grid Ref'),
             callback=self.run,
+            checkable=True,
             parent=self.iface.mainWindow())
         
         self.add_action(
@@ -182,13 +187,9 @@ class GridRef:
             shortcut=QKeySequence(Qt.Key_F2),
             parent=self.iface.mainWindow())
         
-        # Keep track of the mouse position through QgsMapCanvas.xyCoordinates(p)
-        # self.connect(self.iface.maoCanvas(), 'xyCoordinates(QgsPoint)', self.trackCoords )
-        self.iface.mapCanvas().xyCoordinates.connect(self.trackCoords)
+        self.widget = OSGBWidget(self.iface, self)
+        self.widget.hide()
 
-    def trackCoords(self, p):
-        self.x = p.x()
-        self.y = p.y()
     
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -197,23 +198,15 @@ class GridRef:
                 self.tr(u'&GridRef'),
                 action)
             self.iface.removeToolBarIcon(action)
-        
-        # self.disconnect(self.iface.maoCanvas(), 'xyCoordinates(QgsPoint)', self.trackCoords )
-        self.iface.mapCanvas().xyCoordinates.disconnect(self.trackCoords)
+
+        del self.actionRun
+        del self.widget
 
 
     def run(self):
         """Run method that performs all the real work"""
-        # show the dialog
-        #self.dlg.show()
-        # Run the dialog event loop
-        #result = self.dlg.exec_()
-        # See if OK was pressed
-        #if result:
-        #    # Do something useful here - delete the line containing pass and
-        #    # substitute with your code.
-        tool = PointTool(self.iface.mapCanvas())
-        self.iface.mapCanvas().setMapTool(tool)
+        self.widget.setVisible(not self.widget.isVisible())
+
         
     def run_keyboard(self):
         """ This is the function called by the action assigned to a 
@@ -231,3 +224,91 @@ class GridRef:
         self.iface.messageBar().pushMessage("Grid reference copied to clipboard.", duration=1)
         
         
+
+
+class OSGBWidget(QFrame):
+
+    def __init__(self, iface, plugin):
+        cw = iface.mainWindow().centralWidget()
+        QWidget.__init__(self, cw)
+        self.iface = iface
+
+        self.lbl = QLabel("OSGB")
+        self.editCoords = QLineEdit(self)
+
+        self.btnClose = QToolButton(self)
+        self.btnClose.setToolTip("Close")
+        self.btnClose.setMinimumWidth(40)
+        self.btnClose.setStyleSheet(
+          "QToolButton { background-color: rgba(0, 0, 0, 0); }"
+          "QToolButton::menu-button { background-color: rgba(0, 0, 0, 0); }")
+        self.btnClose.setCursor(Qt.PointingHandCursor)
+        self.btnClose.setIcon(QgsApplication.getThemeIcon( "/mIconClose.png"))
+        self.btnClose.setIconSize(QSize( 18, 18 ))
+        self.btnClose.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        self.btnClose.clicked.connect(plugin.actionRun.trigger)
+
+        self.btnPointTool = QToolButton(self)
+        self.btnPointTool.setToolTip("Pick point")
+        self.btnPointTool.setIcon(QgsApplication.getThemeIcon( "/mActionWhatsThis.svg"))
+        self.btnPointTool.setIconSize(QSize( 18, 18 ))
+        self.btnPointTool.clicked.connect(self.pickPoint)
+        self.btnPointTool.setCheckable(True)
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.lbl)
+        layout.addWidget(self.editCoords)
+        layout.addWidget(self.btnPointTool)
+        layout.addStretch()
+        layout.addWidget(self.btnClose)
+        self.setLayout(layout)
+
+        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+
+        cw.layout().addWidget(self, 2, 0)
+
+        iface.mapCanvas().xyCoordinates.connect(self.trackCoords)
+
+        self.editCoords.editingFinished.connect(self.setCoords)
+
+    def trackCoords(self, pt):
+        # dynamically determine the most sensible precision for the given scale
+        import math
+        log_scale = math.log(self.iface.mapCanvas().scale()) / math.log(10)
+        if log_scale >= 6:
+          precision = 1000
+        elif log_scale >= 5:
+          precision = 100
+        elif log_scale >= 4:
+          precision = 10
+        else:
+          precision = 1
+
+        try:
+            os_ref = xy_to_osgb(pt.x(), pt.y(), precision)
+        except KeyError:
+            os_ref = "[out of bounds]"
+        self.editCoords.setText(os_ref)
+
+    def setCoords(self):
+
+        try:
+          x,y = osgb_to_xy(self.editCoords.text())
+
+          r = self.iface.mapCanvas().extent()
+          self.iface.mapCanvas().setExtent(
+            QgsRectangle(
+              x - r.width() / 2.0, y - r.height() / 2.0,
+              x + r.width() / 2.0, y + r.height() / 2.0
+            )
+          )
+        except Exception:
+            QMessageBox.warning(
+              self.iface.mapCanvas(),
+              "Format",
+              "The coordinates should be in format XX ### ###")
+
+    def pickPoint(self):
+        tool = PointTool(self.iface.mapCanvas())
+        tool.setButton(self.btnPointTool)
+        self.iface.mapCanvas().setMapTool(tool)
