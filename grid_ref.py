@@ -269,7 +269,7 @@ class OSGBWidget(QFrame):
 
         iface.mapCanvas().xyCoordinates.connect(self.trackCoords)
 
-        self.editCoords.editingFinished.connect(self.setCoords)
+        self.editCoords.returnPressed.connect(self.setCoords)
 
     def trackCoords(self, pt):
         # dynamically determine the most sensible precision for the given scale
