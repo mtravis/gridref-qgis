@@ -20,8 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from qgis.gui import *
+from qgis.core import *
+
 # Initialize Qt resources from file resources.py
 import resources_rc
 # Import the code for the dialog
@@ -69,7 +72,7 @@ class GridRef:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'GridRef')
         self.toolbar.setObjectName(u'GridRef')
-        
+
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -157,12 +160,12 @@ class GridRef:
 
         if checkable:
             action.setCheckable(True)
-        
+
         if add_to_menu:
             self.iface.addPluginToMenu(
                 self.menu,
                 action)
-        
+
         self.actions.append(action)
 
         return action
@@ -177,7 +180,7 @@ class GridRef:
             callback=self.run,
             checkable=True,
             parent=self.iface.mainWindow())
-        
+
         self.add_action(
             icon_path,
             text=self.tr(u'Grid Ref Keyboard Shortcut'),
@@ -186,11 +189,11 @@ class GridRef:
             add_to_toolbar=False,
             shortcut=QKeySequence(Qt.Key_F2),
             parent=self.iface.mainWindow())
-        
+
         self.widget = OSGBWidget(self.iface, self)
         self.widget.hide()
 
-    
+
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -207,23 +210,23 @@ class GridRef:
         """Run method that performs all the real work"""
         self.widget.setVisible(not self.widget.isVisible())
 
-        
+
     def run_keyboard(self):
-        """ This is the function called by the action assigned to a 
-        keyboard shortcut.  It will determine the position of the mouse 
-        cursor on the canvas, determine the OS GB grid reference and 
-        copy the result to the clipboard.  
-        
-        If the coordinate reference system is not 27700 or the coord is 
-        out of the expected range then a sensible error message will be 
+        """ This is the function called by the action assigned to a
+        keyboard shortcut.  It will determine the position of the mouse
+        cursor on the canvas, determine the OS GB grid reference and
+        copy the result to the clipboard.
+
+        If the coordinate reference system is not 27700 or the coord is
+        out of the expected range then a sensible error message will be
         copied to the clipboard. """
-        
+
         os_ref = xy_to_osgb(self.x, self.y)
         # QMessageBox.information(None, "Info", "Grid Ref: " + os_ref)
         QApplication.clipboard().setText(os_ref)
         self.iface.messageBar().pushMessage("Grid reference copied to clipboard.", duration=1)
-        
-        
+
+
 
 
 class OSGBWidget(QFrame):
