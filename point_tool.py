@@ -37,7 +37,7 @@ class PointTool(QgsMapTool):
             os_ref = xy_to_osgb(point.x(), point.y(), 10)
             point_4326 = reproject_point_to_4326(self.canvas, point)
             QApplication.clipboard().setText(os_ref)
-            msg = "Grid Ref: {}\n\nLong,Lat: {:.3f},{:.3f}\n\nCopied to clipboard".format(os_ref, point_4326.x(), point_4326.y())
+            msg = "Grid Ref: {}\n\nLong,Lat: {:.2f}, {:.2f}\n\nCopied to clipboard".format(os_ref, point_4326.x(), point_4326.y())
             QMessageBox.information(None, "OS Grid Reference", msg)
         else:
             QMessageBox.information(None, "OS Grid Reference", "Point out of bounds")

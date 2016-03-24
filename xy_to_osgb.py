@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# xy_to_osgb - A library of functions for converting eastings and 
+# xy_to_osgb - A library of functions for converting eastings and
 # northings to OS Grid References
 # Copyright (C) 2014 Peter Wells for Lutra Consulting
 
@@ -24,6 +24,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+from grid_ref_utils import GridRefException
 
 major_letters = {
     0 : {
@@ -70,36 +72,38 @@ inv_minor_letters = _make_inverse_mapping(minor_letters)
 supported_precisions = [1000, 100, 10, 1]
 
 def xy_to_osgb(easting, northing, precision=1000):
-    
+
     """
-        
+
     """
-    
+
     if not precision in supported_precisions:
-        raise Exception('Precision of ' + str(precision) + ' is not supported.')
-    
+        raise GridRefException('Precision of ' + str(precision) + ' is not supported.')
+
     # Determine first letter
-    
-    x_idx = easting // 500000
-    y_idx = northing // 500000
-    major_letter = major_letters[x_idx][y_idx]
-    
-    # Determine 'index' of 100km square within the larger 500km tile
-    
-    macro_easting = easting % 500000
-    macro_northing = northing % 500000
-    macro_x_idx = macro_easting // 100000
-    macro_y_idx = macro_northing // 100000
-    minor_letter = minor_letters[macro_x_idx][macro_y_idx]
-    
+    try:
+        x_idx = easting // 500000
+        y_idx = northing // 500000
+        major_letter = major_letters[x_idx][y_idx]
+
+        # Determine 'index' of 100km square within the larger 500km tile
+
+        macro_easting = easting % 500000
+        macro_northing = northing % 500000
+        macro_x_idx = macro_easting // 100000
+        macro_y_idx = macro_northing // 100000
+        minor_letter = minor_letters[macro_x_idx][macro_y_idx]
+    except (ValueError, IndexError, KeyError, AssertionError):
+        raise GridRefException("Out of range")
+
     # determine the internal coordinate withing the 100km tile
     micro_easting = macro_easting % 100000
     micro_northing = macro_northing % 100000
-    
+
     # determine how to report the numeric part
     ref_x = micro_easting // precision
     ref_y = micro_northing // precision
-    
+
     coord_width = 2
     if precision == 100:
         coord_width = 3
@@ -132,7 +136,7 @@ def osgb_to_xy(coords):
         y_micro = int(ref_y) * multiplier
 
     except (ValueError, IndexError, KeyError, AssertionError):
-        raise Exception("Invalid format of coordinates")
+        raise GridRefException("Invalid format of coordinates")
 
     easting  = x_maj*500000 + x_min*100000 + x_micro
     northing = y_maj*500000 + y_min*100000 + y_micro
@@ -145,22 +149,22 @@ def main():
     assert xy_to_osgb(236336, 682945) == 'NS 36 82'
     assert xy_to_osgb(392876, 494743) == 'SD 92 94'
     assert xy_to_osgb(472945, 103830) == 'SU 72 03'
-    
+
     assert xy_to_osgb(432574, 332567, 100) == 'SK 325 325'
     assert xy_to_osgb(236336, 682945, 100) == 'NS 363 829'
     assert xy_to_osgb(392876, 494743, 100) == 'SD 928 947'
     assert xy_to_osgb(472945, 103830, 100) == 'SU 729 038'
-    
+
     assert xy_to_osgb(432574, 332567, 10) == 'SK 3257 3256'
     assert xy_to_osgb(236336, 682945, 10) == 'NS 3633 8294'
     assert xy_to_osgb(392876, 494743, 10) == 'SD 9287 9474'
     assert xy_to_osgb(472945, 103830, 10) == 'SU 7294 0383'
-    
+
     assert xy_to_osgb(432574, 332567, 1) == 'SK 32574 32567'
     assert xy_to_osgb(236336, 682945, 1) == 'NS 36336 82945'
     assert xy_to_osgb(392876, 494743, 1) == 'SD 92876 94743'
     assert xy_to_osgb(472945, 103830, 1) == 'SU 72945 03830'
-    
+
     assert osgb_to_xy('SK 32    32')    == (432000, 332000)
     assert osgb_to_xy('SK 325   325')   == (432500, 332500)
     assert osgb_to_xy('SK 3257  3256')  == (432570, 332560)
