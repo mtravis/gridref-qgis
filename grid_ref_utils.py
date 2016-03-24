@@ -17,6 +17,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from PyQt4 import uic
+import os
 from qgis.gui import *
 from qgis.core import *
 
@@ -25,3 +27,9 @@ def reproject_point_to_4326(canvas, point):
     crsDest = QgsCoordinateReferenceSystem(4326)
     xform = QgsCoordinateTransform(crsSrc, crsDest)
     return xform.transform(point)
+
+def load_ui(name):
+    ui_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                          'ui',
+                          name + '.ui')
+    return uic.loadUiType(ui_file)
