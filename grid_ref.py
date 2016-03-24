@@ -25,12 +25,8 @@ from PyQt4.QtGui import *
 from qgis.gui import *
 from qgis.core import *
 
-# Initialize Qt resources from file resources.py
-import resources_rc
-# Import the code for the dialog
-from grid_ref_dialog import GridRefDialog
+from grid_ref_widget import OSGBWidget
 import os.path
-from PointTool import *
 from xy_to_osgb import xy_to_osgb, osgb_to_xy
 
 
@@ -62,9 +58,6 @@ class GridRef:
 
             if qVersion() > '4.3.3':
                 QCoreApplication.installTranslator(self.translator)
-
-        # Create the dialog (after translation) and keep reference
-        self.dlg = GridRefDialog()
 
         # Declare instance attributes
         self.actions = []
@@ -191,8 +184,8 @@ class GridRef:
             parent=self.iface.mainWindow())
 
         self.widget = OSGBWidget(self.iface, self)
+        self.iface.addDockWidget(Qt.BottomDockWidgetArea, self.widget)
         self.widget.hide()
-
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -201,6 +194,8 @@ class GridRef:
                 self.tr(u'&GridRef'),
                 action)
             self.iface.removeToolBarIcon(action)
+
+        self.iface.removeDockWidget(self.widget)
 
         del self.actionRun
         del self.widget
@@ -225,93 +220,3 @@ class GridRef:
         # QMessageBox.information(None, "Info", "Grid Ref: " + os_ref)
         QApplication.clipboard().setText(os_ref)
         self.iface.messageBar().pushMessage("Grid reference copied to clipboard.", duration=1)
-
-
-
-
-class OSGBWidget(QFrame):
-
-    def __init__(self, iface, plugin):
-        cw = iface.mainWindow().centralWidget()
-        QWidget.__init__(self, cw)
-        self.iface = iface
-
-        self.lbl = QLabel("OSGB")
-        self.editCoords = QLineEdit(self)
-
-        self.btnClose = QToolButton(self)
-        self.btnClose.setToolTip("Close")
-        self.btnClose.setMinimumWidth(40)
-        self.btnClose.setStyleSheet(
-          "QToolButton { background-color: rgba(0, 0, 0, 0); }"
-          "QToolButton::menu-button { background-color: rgba(0, 0, 0, 0); }")
-        self.btnClose.setCursor(Qt.PointingHandCursor)
-        self.btnClose.setIcon(QgsApplication.getThemeIcon( "/mIconClose.png"))
-        self.btnClose.setIconSize(QSize( 18, 18 ))
-        self.btnClose.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-        self.btnClose.clicked.connect(plugin.actionRun.trigger)
-
-        self.btnPointTool = QToolButton(self)
-        self.btnPointTool.setToolTip("Pick point")
-        self.btnPointTool.setIcon(QgsApplication.getThemeIcon( "/mActionWhatsThis.svg"))
-        self.btnPointTool.setIconSize(QSize( 18, 18 ))
-        self.btnPointTool.clicked.connect(self.pickPoint)
-        self.btnPointTool.setCheckable(True)
-
-        layout = QHBoxLayout()
-        layout.addWidget(self.lbl)
-        layout.addWidget(self.editCoords)
-        layout.addWidget(self.btnPointTool)
-        layout.addStretch()
-        layout.addWidget(self.btnClose)
-        self.setLayout(layout)
-
-        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-
-        cw.layout().addWidget(self, 2, 0)
-
-        iface.mapCanvas().xyCoordinates.connect(self.trackCoords)
-
-        self.editCoords.returnPressed.connect(self.setCoords)
-
-    def trackCoords(self, pt):
-        # dynamically determine the most sensible precision for the given scale
-        import math
-        log_scale = math.log(self.iface.mapCanvas().scale()) / math.log(10)
-        if log_scale >= 6:
-          precision = 1000
-        elif log_scale >= 5:
-          precision = 100
-        elif log_scale >= 4:
-          precision = 10
-        else:
-          precision = 1
-
-        try:
-            os_ref = xy_to_osgb(pt.x(), pt.y(), precision)
-        except KeyError:
-            os_ref = "[out of bounds]"
-        self.editCoords.setText(os_ref)
-
-    def setCoords(self):
-
-        try:
-          x,y = osgb_to_xy(self.editCoords.text())
-
-          r = self.iface.mapCanvas().extent()
-          self.iface.mapCanvas().setExtent(
-            QgsRectangle(
-              x - r.width() / 2.0, y - r.height() / 2.0,
-              x + r.width() / 2.0, y + r.height() / 2.0
-            )
-          )
-        except Exception:
-            QMessageBox.warning(
-              self.iface.mapCanvas(),
-              "Format",
-              "The coordinates should be in format XX ### ###")
-
-    def pickPoint(self):
-        tool = PointTool(self.iface.mapCanvas())
-        tool.setButton(self.btnPointTool)
-        self.iface.mapCanvas().setMapTool(tool)
