@@ -180,7 +180,6 @@ class GridRef:
             callback=self.run_keyboard,
             add_to_menu=True,
             add_to_toolbar=False,
-            shortcut=QKeySequence(Qt.Key_F2),
             parent=self.iface.mainWindow())
 
         self.widget = OSGBWidget(self.iface, self)
