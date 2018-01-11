@@ -44,12 +44,14 @@ from grid_ref_utils import (
 uiWidget, qtBaseClass = load_ui('grid_ref_widget')
 
 class OSGBWidget(qtBaseClass, uiWidget):
-    def __init__(self, iface, plugin, parent=None):
+    def __init__(self, iface, plugin, precision_field, parent=None):
         qtBaseClass.__init__(self)
         uiWidget.__init__(self, parent)
         self.setupUi(self)
         self.iface = iface
         self.marker = None
+        self.precision_field = precision_field
+        self.tool = None
 
         self._set_icons()
         self._add_validators()
@@ -75,6 +77,7 @@ class OSGBWidget(qtBaseClass, uiWidget):
         self.iface.mapCanvas().xyCoordinates.connect(self.trackCoords)
         self.editCoords.returnPressed.connect(self.setCoords)
         self.editLongLat.returnPressed.connect(self.setLongLat)
+        self.precision_field.valueChanged.connect(self.change_precision)
 
     def _setEditCooordsOnMouseMove(self, pt):
         # dynamically determine the most sensible precision for the given scale
@@ -87,6 +90,9 @@ class OSGBWidget(qtBaseClass, uiWidget):
           precision = 10
         else:
           precision = 1
+
+        if self.tool:
+            precision = self.tool.precision
 
         try:
             os_ref = xy_to_osgb(pt.x(), pt.y(), precision)
@@ -108,6 +114,10 @@ class OSGBWidget(qtBaseClass, uiWidget):
         if self.marker:
             self.iface.mapCanvas().scene().removeItem(self.marker)
             self.marker = None
+
+    def change_precision(self):
+        if self.tool:
+            self.tool.precision = pow(10, 5 - self.precision_field.value())
 
     def trackCoords(self, pt):
         self._setEditCooordsOnMouseMove(pt)
@@ -140,6 +150,7 @@ class OSGBWidget(qtBaseClass, uiWidget):
               "The coordinates should be in format ##.##, ##.##")
 
     def pickPoint(self):
-        tool = PointTool(self.iface.mapCanvas())
-        tool.setButton(self.btnPointTool)
-        self.iface.mapCanvas().setMapTool(tool)
+        self.tool = PointTool(self.iface.mapCanvas(), pow(10,self.precision_field.value()))
+        self.change_precision()
+        self.tool.setButton(self.btnPointTool)
+        self.iface.mapCanvas().setMapTool(self.tool)
