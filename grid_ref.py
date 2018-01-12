@@ -182,7 +182,12 @@ class GridRef:
             add_to_toolbar=False,
             parent=self.iface.mainWindow())
 
-        self.widget = OSGBWidget(self.iface, self)
+        precision_field = QSpinBox()
+        precision_field.setToolTip("Coordinates precision")
+        precision_field.setRange(2,4)
+        self.toolbar.addWidget(precision_field)
+
+        self.widget = OSGBWidget(self.iface, self, precision_field)
         self.iface.addDockWidget(Qt.BottomDockWidgetArea, self.widget)
         self.widget.hide()
 
