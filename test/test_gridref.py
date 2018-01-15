@@ -15,6 +15,11 @@ __copyright__ = ('Copyright 2018, Tom Chadwin')
 import os
 import unittest
 
+from qgis.core import *
+from qgis.gui import *
+
+from PyQt4 import QtCore, QtGui, QtTest
+
 from utilities import get_qgis_app
 
 from xy_to_osgb import xy_to_osgb
