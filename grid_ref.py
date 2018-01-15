@@ -167,13 +167,6 @@ class GridRef:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         icon_path = ':/plugins/GridRef/icon.png'
-        self.actionRun = self.add_action(
-            icon_path,
-            text=self.tr(u'Grid Ref'),
-            callback=self.run,
-            checkable=True,
-            parent=self.iface.mainWindow())
-
         self.add_action(
             icon_path,
             text=self.tr(u'Grid Ref Keyboard Shortcut'),
@@ -182,14 +175,8 @@ class GridRef:
             add_to_toolbar=False,
             parent=self.iface.mainWindow())
 
-        precision_field = QSpinBox()
-        precision_field.setToolTip("Coordinates precision")
-        precision_field.setRange(2,4)
-        self.toolbar.addWidget(precision_field)
-
-        self.widget = OSGBWidget(self.iface, self, precision_field)
+        self.widget = OSGBWidget(self.iface, self)
         self.iface.addDockWidget(Qt.BottomDockWidgetArea, self.widget)
-        self.widget.hide()
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
@@ -201,7 +188,6 @@ class GridRef:
 
         self.iface.removeDockWidget(self.widget)
 
-        del self.actionRun
         del self.widget
 
 
