@@ -28,7 +28,7 @@ class QGISTest(unittest.TestCase):
         """Given XY returns correct OSGB coordinates"""
 
         osgb_gridref = xy_to_osgb(393618.933445, 564351.935939)
-        expected = "NY9364"
+        expected = "NY 93 64"
         self.assertEqual(osgb_gridref, expected)
 
 if __name__ == '__main__':
