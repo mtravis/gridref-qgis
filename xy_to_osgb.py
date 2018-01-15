@@ -69,7 +69,7 @@ inv_major_letters = _make_inverse_mapping(major_letters)
 inv_minor_letters = _make_inverse_mapping(minor_letters)
 
 
-supported_precisions = [1000, 100, 10, 1]
+supported_precisions = [100000, 10000, 1000, 100, 10, 1]
 
 def xy_to_osgb(easting, northing, precision=1000):
 
@@ -104,7 +104,11 @@ def xy_to_osgb(easting, northing, precision=1000):
     ref_x = micro_easting // precision
     ref_y = micro_northing // precision
 
-    coord_width = 2
+    coord_width = 0
+    if precision == 10000:
+        coord_width = 1
+    elif precision == 1000:
+        coord_width = 2
     if precision == 100:
         coord_width = 3
     elif precision == 10:
@@ -112,7 +116,7 @@ def xy_to_osgb(easting, northing, precision=1000):
     elif precision == 1:
         coord_width = 5
 
-    format_string = r'%s%s %0' + str(coord_width) + r'd %0' + str(coord_width) + r'd'
+    format_string =  r'%s%s %0' + str(coord_width) + r'd %0' + str(coord_width) + r'd' if precision else r'%s%s %0'
     return format_string % (major_letter, minor_letter, ref_x, ref_y)
 
 

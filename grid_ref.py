@@ -208,5 +208,6 @@ class GridRef:
 
         os_ref = xy_to_osgb(self.x, self.y)
         # QMessageBox.information(None, "Info", "Grid Ref: " + os_ref)
-        QApplication.clipboard().setText(os_ref)
-        self.iface.messageBar().pushMessage("Grid reference copied to clipboard.", duration=1)
+        if self.widget.clipboardCheck.checked():
+            QApplication.clipboard().setText(os_ref)
+            self.iface.messageBar().pushMessage("Grid reference copied to clipboard.", duration=1)

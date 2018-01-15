@@ -53,7 +53,8 @@ class OSGBWidget(qtBaseClass, uiWidget):
         self.tool = None
 
         self.precisionField.setToolTip("Coordinates precision")
-        self.precisionField.setRange(2, 4)
+        self.precisionField.setRange(0, 6)
+        self.precisionField.setValue(4)
 
         self._set_icons()
         self._add_validators()
@@ -76,6 +77,7 @@ class OSGBWidget(qtBaseClass, uiWidget):
         self.editCoords.returnPressed.connect(self.setCoords)
         self.editLongLat.returnPressed.connect(self.setLongLat)
         self.precisionField.valueChanged.connect(self.change_precision)
+        self.clipboardCheck.stateChanged.connect(self.change_copy_to_clipboard)
 
     def _setEditCooordsOnMouseMove(self, pt):
         if not self.tool:
@@ -83,7 +85,8 @@ class OSGBWidget(qtBaseClass, uiWidget):
 
         try:
             os_ref = xy_to_osgb(pt.x(), pt.y(), self.tool.precision)
-        except GridRefException:
+        except GridRefException as e:
+            print(e)
             os_ref = "[out of bounds]"
         self.editCoords.setText(os_ref)
 
@@ -105,6 +108,11 @@ class OSGBWidget(qtBaseClass, uiWidget):
     def change_precision(self):
         if self.tool:
             self.tool.precision = pow(10, 5 - self.precisionField.value())
+
+    def change_copy_to_clipboard(self):
+        if self.tool:
+            print(self.clipboardCheck.isChecked())
+            self.tool.clipboard_enable = self.clipboardCheck.isChecked()
 
     def trackCoords(self, pt):
         self._setEditCooordsOnMouseMove(pt)
@@ -141,6 +149,6 @@ class OSGBWidget(qtBaseClass, uiWidget):
         self.iface.mapCanvas().setMapTool(self.tool)
 
     def init_tool(self):
-        self.tool = PointTool(self.iface.mapCanvas(), pow(10, self.precisionField.value()))
+        self.tool = PointTool(self.iface.mapCanvas(), pow(10, self.precisionField.value()), self.clipboardCheck.isChecked())
         self.change_precision()
         self.tool.setButton(self.btnPointTool)
