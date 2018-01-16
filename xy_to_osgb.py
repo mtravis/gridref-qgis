@@ -23,7 +23,8 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+# USA.
 
 from grid_ref_utils import GridRefException
 
@@ -67,7 +68,7 @@ def _make_inverse_mapping(letters_dict):
     return inv
 
 
-  inv_major_letters = _make_inverse_mapping(major_letters)
+inv_major_letters = _make_inverse_mapping(major_letters)
 inv_minor_letters = _make_inverse_mapping(minor_letters)
 
 
