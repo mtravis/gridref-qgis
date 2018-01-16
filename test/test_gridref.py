@@ -51,5 +51,13 @@ class QGISTest(unittest.TestCase):
         expected = "NY 936 643"
         self.assertEqual(osgb_gridref, expected)
 
+    def test_clipboard(self):
+        """Returned OSGB grid reference is copied to clipboard"""
+
+        osgb_gridref = xy_to_osgb(393618.933445, 564351.935939)
+        clipboardText = QtGui.QApplication.clipboard().text()
+        expected = "NY 93 64"
+        self.assertEqual(clipboardText, expected)
+
 if __name__ == '__main__':
     unittest.main()
