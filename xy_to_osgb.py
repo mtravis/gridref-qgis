@@ -23,47 +23,50 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+# USA.
 
 from grid_ref_utils import GridRefException
 
 major_letters = {
-    0 : {
-        0 : 'S',
-        1 : 'N',
-        2 : 'H'
+    0: {
+        0: 'S',
+        1: 'N',
+        2: 'H'
     },
-    1 : {
-        0 : 'T',
-        1 : 'O'
+    1: {
+        0: 'T',
+        1: 'O'
     }
 }
 
 minor_letters = {
-    0 : {
-        0 : 'V', 1 : 'Q', 2 : 'L', 3 : 'F', 4 : 'A'
+    0: {
+        0: 'V', 1: 'Q', 2: 'L', 3: 'F', 4: 'A'
     },
-    1 : {
-        0 : 'W', 1 : 'R', 2 : 'M', 3 : 'G', 4 : 'B'
+    1: {
+        0: 'W', 1: 'R', 2: 'M', 3: 'G', 4: 'B'
     },
-    2 : {
-        0 : 'X', 1 : 'S', 2 : 'N', 3 : 'H', 4 : 'C'
+    2: {
+        0: 'X', 1: 'S', 2: 'N', 3: 'H', 4: 'C'
     },
-    3 : {
-        0 : 'Y', 1 : 'T', 2 : 'O', 3 : 'J', 4 : 'D'
+    3: {
+        0: 'Y', 1: 'T', 2: 'O', 3: 'J', 4: 'D'
     },
-    4 : {
-        0 : 'Z', 1 : 'U', 2 : 'P', 3 : 'K', 4 : 'E'
+    4: {
+        0: 'Z', 1: 'U', 2: 'P', 3: 'K', 4: 'E'
     }
 }
 
+
 def _make_inverse_mapping(letters_dict):
-  """ mapping for conversion OSGB -> XY """
-  inv = {}
-  for x,y_dict in letters_dict.iteritems():
-      for y,letter in y_dict.iteritems():
-          inv[letter] = (x,y)
-  return inv
+    """ mapping for conversion OSGB -> XY """
+    inv = {}
+    for x, y_dict in letters_dict.iteritems():
+        for y, letter in y_dict.iteritems():
+            inv[letter] = (x, y)
+    return inv
+
 
 inv_major_letters = _make_inverse_mapping(major_letters)
 inv_minor_letters = _make_inverse_mapping(minor_letters)
@@ -71,14 +74,16 @@ inv_minor_letters = _make_inverse_mapping(minor_letters)
 
 supported_precisions = [1000, 100, 10, 1]
 
+
 def xy_to_osgb(easting, northing, precision=1000):
 
     """
 
     """
 
-    if not precision in supported_precisions:
-        raise GridRefException('Precision of ' + str(precision) + ' is not supported.')
+    if precision not in supported_precisions:
+        raise GridRefException('Precision of ' + str(precision) +
+                               ' is not supported.')
 
     # Determine first letter
     try:
@@ -112,21 +117,23 @@ def xy_to_osgb(easting, northing, precision=1000):
     elif precision == 1:
         coord_width = 5
 
-    format_string = r'%s%s %0' + str(coord_width) + r'd %0' + str(coord_width) + r'd'
+    format_string = (r'%s%s %0' + str(coord_width) +
+                     r'd %0' + str(coord_width) + r'd')
     return format_string % (major_letter, minor_letter, ref_x, ref_y)
 
 
 def osgb_to_xy(coords):
     """
-    Convert from OSGB to X,Y coordinates. Expected format of coordinates: "XX 111 222"
+    Convert from OSGB to X,Y coordinates. Expected format of
+    coordinates: "XX 111 222"
     """
 
     try:
         tile, ref_x, ref_y = coords.split()
 
         # decode tile
-        (x_maj,y_maj) = inv_major_letters[tile[0]]
-        (x_min,y_min) = inv_minor_letters[tile[1]]
+        (x_maj, y_maj) = inv_major_letters[tile[0]]
+        (x_min, y_min) = inv_minor_letters[tile[1]]
 
         # decode numeric coords
         assert len(ref_x) == len(ref_y) and len(ref_x) >= 1 and len(ref_x) <= 5
@@ -138,7 +145,7 @@ def osgb_to_xy(coords):
     except (ValueError, IndexError, KeyError, AssertionError):
         raise GridRefException("Invalid format of coordinates")
 
-    easting  = x_maj*500000 + x_min*100000 + x_micro
+    easting = x_maj*500000 + x_min*100000 + x_micro
     northing = y_maj*500000 + y_min*100000 + y_micro
     return (easting, northing)
 
@@ -165,10 +172,11 @@ def main():
     assert xy_to_osgb(392876, 494743, 1) == 'SD 92876 94743'
     assert xy_to_osgb(472945, 103830, 1) == 'SU 72945 03830'
 
-    assert osgb_to_xy('SK 32    32')    == (432000, 332000)
-    assert osgb_to_xy('SK 325   325')   == (432500, 332500)
-    assert osgb_to_xy('SK 3257  3256')  == (432570, 332560)
+    assert osgb_to_xy('SK 32    32') == (432000, 332000)
+    assert osgb_to_xy('SK 325   325') == (432500, 332500)
+    assert osgb_to_xy('SK 3257  3256') == (432570, 332560)
     assert osgb_to_xy('SK 32574 32567') == (432574, 332567)
+
 
 if __name__ == "__main__":
     main()

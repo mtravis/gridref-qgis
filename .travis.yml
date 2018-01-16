@@ -21,6 +21,8 @@ install:
   - sudo -H pip install --upgrade pip
   - sudo -H pip install nose
   - sudo -H pip install rednose
+  - sudo -H pip install --upgrade pycodestyle
+  - sudo apt-get install pylint
 
 before_script:
   - echo "Build starting on " `date`
@@ -30,6 +32,8 @@ before_script:
   - export LD_LIBRARY_PATH=${QGIS_PREFIX_PATH}/lib
 
 script:
+  - pycodestyle --exclude=test,resources*.py,help ./ --format=pylint
+  - make pylint
   - QGIS_DEBUG=0 xvfb-run --server-args="-screen 0, 1024x768x24" nosetests -s --nologcapture -A 'not slow' -v --rednose --verbose 
 
 notifications:

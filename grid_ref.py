@@ -3,7 +3,8 @@
 /***************************************************************************
  GridRef
                                  A QGIS plugin
- This plugin takes the coords of the map cnavas and translates to an Ordnance Survey Grid Reference e.g. SX4855
+ This plugin takes the coords of the map cnavas and translates to an Ordnance
+ Survey Grid Reference e.g. SX4855
                               -------------------
         begin                : 2014-08-21
         git sha              : $Format:%H$
@@ -81,20 +82,18 @@ class GridRef:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('GridRef', message)
 
-
-    def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        shortcut=None,
-        checkable=None,
-        parent=None):
+    def add_action(self,
+                   icon_path,
+                   text,
+                   callback,
+                   enabled_flag=True,
+                   add_to_menu=True,
+                   add_to_toolbar=True,
+                   status_tip=None,
+                   whats_this=None,
+                   shortcut=None,
+                   checkable=None,
+                   parent=None):
         """Add a toolbar icon to the InaSAFE toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -184,7 +183,7 @@ class GridRef:
 
         precision_field = QSpinBox()
         precision_field.setToolTip("Coordinates precision")
-        precision_field.setRange(2,4)
+        precision_field.setRange(2, 4)
         self.toolbar.addWidget(precision_field)
 
         self.widget = OSGBWidget(self.iface, self, precision_field)
@@ -204,11 +203,9 @@ class GridRef:
         del self.actionRun
         del self.widget
 
-
     def run(self):
         """Run method that performs all the real work"""
         self.widget.setVisible(not self.widget.isVisible())
-
 
     def run_keyboard(self):
         """ This is the function called by the action assigned to a
@@ -223,4 +220,5 @@ class GridRef:
         os_ref = xy_to_osgb(self.x, self.y)
         # QMessageBox.information(None, "Info", "Grid Ref: " + os_ref)
         QApplication.clipboard().setText(os_ref)
-        self.iface.messageBar().pushMessage("Grid reference copied to clipboard.", duration=1)
+        self.iface.messageBar().pushMessage(
+            "Grid reference copied to clipboard.", duration=1)

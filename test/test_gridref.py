@@ -44,8 +44,7 @@ class QGISTest(unittest.TestCase):
         self.assertRaises(GridRefException, xy_to_osgb, -10, 0)
 
     def test_xy_to_osgb_precision(self):
-        """Given XY returns correct OSGB grid reference with non-default
-           precision"""
+        """Given XY returns correct OSGB grid reference with non-default precision"""
 
         osgb_gridref = xy_to_osgb(393618.933445, 564351.935939, 100)
         expected = "NY 936 643"

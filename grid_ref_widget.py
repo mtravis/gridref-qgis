@@ -21,7 +21,8 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+# USA.
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -43,6 +44,7 @@ from grid_ref_utils import (
 
 uiWidget, qtBaseClass = load_ui('grid_ref_widget')
 
+
 class OSGBWidget(qtBaseClass, uiWidget):
     def __init__(self, iface, plugin, precision_field, parent=None):
         qtBaseClass.__init__(self)
@@ -58,17 +60,20 @@ class OSGBWidget(qtBaseClass, uiWidget):
         self._connect_signals(plugin)
 
     def _set_icons(self):
-        self.btnClose.setIcon(QgsApplication.getThemeIcon( "/mIconClose.png"))
-        self.btnClose.setIconSize(QSize( 18, 18 ))
+        self.btnClose.setIcon(QgsApplication.getThemeIcon("/mIconClose.png"))
+        self.btnClose.setIconSize(QSize(18, 18))
 
-        self.btnPointTool.setIcon(QgsApplication.getThemeIcon( "/mActionWhatsThis.svg"))
-        self.btnPointTool.setIconSize(QSize( 18, 18 ))
+        self.btnPointTool.setIcon(
+            QgsApplication.getThemeIcon("/mActionWhatsThis.svg"))
+        self.btnPointTool.setIconSize(QSize(18, 18))
 
     def _add_validators(self):
-        re = QRegExp(r'''^(\s*[a-zA-Z]{2}\s*\d{1,4}\s*\d{1,4}\s*|\[out of bounds\])$''')
+        re = QRegExp(
+            r'''^(\s*[a-zA-Z]{2}\s*\d{1,4}\s*\d{1,4}\s*|\[out of bounds\])$''')
         self.editCoords.setValidator(QRegExpValidator(re, self))
 
-        re = QRegExp("^\s*[-+]?[0-9]*\.?[0-9]+\s*\,\s*[-+]?[0-9]*\.?[0-9]+\s*$")
+        re = QRegExp(
+            "^\s*[-+]?[0-9]*\.?[0-9]+\s*\,\s*[-+]?[0-9]*\.?[0-9]+\s*$")
         self.editLongLat.setValidator(QRegExpValidator(re, self))
 
     def _connect_signals(self, plugin):
@@ -83,13 +88,13 @@ class OSGBWidget(qtBaseClass, uiWidget):
         # dynamically determine the most sensible precision for the given scale
         log_scale = math.log(self.iface.mapCanvas().scale()) / math.log(10)
         if log_scale >= 6:
-          precision = 1000
+            precision = 1000
         elif log_scale >= 5:
-          precision = 100
+            precision = 100
         elif log_scale >= 4:
-          precision = 10
+            precision = 10
         else:
-          precision = 1
+            precision = 1
 
         if self.tool:
             precision = self.tool.precision
@@ -126,10 +131,10 @@ class OSGBWidget(qtBaseClass, uiWidget):
 
     def setCoords(self):
         try:
-          x,y = osgb_to_xy(self.editCoords.text())
-          point27700 = QgsPoint(x,y)
-          centre_on_point(self.iface.mapCanvas(), point27700)
-          self._add_marker(point27700)
+            x, y = osgb_to_xy(self.editCoords.text())
+            point27700 = QgsPoint(x, y)
+            centre_on_point(self.iface.mapCanvas(), point27700)
+            self._add_marker(point27700)
         except GridRefException:
             QMessageBox.warning(
               self.iface.mapCanvas(),
@@ -138,11 +143,12 @@ class OSGBWidget(qtBaseClass, uiWidget):
 
     def setLongLat(self):
         try:
-          longlat = self.editLongLat.text()
-          point4326 = point_from_longlat_text(longlat)
-          point27700 = reproject_point_from_4326(self.iface.mapCanvas(), point4326)
-          centre_on_point(self.iface.mapCanvas(), point27700)
-          self._add_marker(point27700)
+            longlat = self.editLongLat.text()
+            point4326 = point_from_longlat_text(longlat)
+            point27700 = reproject_point_from_4326(self.iface.mapCanvas(),
+                                                   point4326)
+            centre_on_point(self.iface.mapCanvas(), point27700)
+            self._add_marker(point27700)
         except GridRefException:
             QMessageBox.warning(
               self.iface.mapCanvas(),
@@ -150,7 +156,8 @@ class OSGBWidget(qtBaseClass, uiWidget):
               "The coordinates should be in format ##.##, ##.##")
 
     def pickPoint(self):
-        self.tool = PointTool(self.iface.mapCanvas(), pow(10,self.precision_field.value()))
+        self.tool = PointTool(self.iface.mapCanvas(),
+                              pow(10, self.precision_field.value()))
         self.change_precision()
         self.tool.setButton(self.btnPointTool)
         self.iface.mapCanvas().setMapTool(self.tool)
