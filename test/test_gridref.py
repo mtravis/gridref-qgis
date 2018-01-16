@@ -32,7 +32,7 @@ class QGISTest(unittest.TestCase):
     """Test the QGIS Environment"""
 
     def test_xy_to_osgb(self):
-        """Given XY returns correct OSGB coordinates"""
+        """Given XY returns correct OSGB grid reference"""
 
         osgb_gridref = xy_to_osgb(393618.933445, 564351.935939)
         expected = "NY 93 64"
@@ -42,6 +42,14 @@ class QGISTest(unittest.TestCase):
         """Non-OSGB coordinates raises correct exception"""
 
         self.assertRaises(GridRefException, xy_to_osgb, -10, 0)
+
+    def test_xy_to_osgb_precision(self):
+        """Given XY returns correct OSGB grid reference with non-default
+           precision"""
+
+        osgb_gridref = xy_to_osgb(393618.933445, 564351.935939, 100)
+        expected = "NY 9354 6426"
+        self.assertEqual(osgb_gridref, expected)
 
 if __name__ == '__main__':
     unittest.main()
