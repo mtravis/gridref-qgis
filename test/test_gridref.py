@@ -48,7 +48,7 @@ class QGISTest(unittest.TestCase):
            precision"""
 
         osgb_gridref = xy_to_osgb(393618.933445, 564351.935939, 100)
-        expected = "NY 9354 6426"
+        expected = "NY 936 643"
         self.assertEqual(osgb_gridref, expected)
 
 if __name__ == '__main__':
