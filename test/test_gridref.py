@@ -41,8 +41,7 @@ class QGISTest(unittest.TestCase):
     def test_xy_out_of_osgb_bounds(self):
         """Non-OSGB coordinates raises correct exception"""
 
-        osgb_gridref = xy_to_osgb(-10, 0)
-        self.assertRaises(xy_to_osgb(-10, 0), GridRefException)
+        self.assertRaises(GridRefException, xy_to_osgb, -10, 0)
 
 if __name__ == '__main__':
     unittest.main()
