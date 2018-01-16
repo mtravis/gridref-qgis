@@ -32,7 +32,7 @@ before_script:
   - export LD_LIBRARY_PATH=${QGIS_PREFIX_PATH}/lib
 
 script:
-  - pycodestyle --exclude=test ./ --format=pylint
+  - pycodestyle --exclude=test,resources*.py,help ./ --format=pylint
   - make pylint
   - QGIS_DEBUG=0 xvfb-run --server-args="-screen 0, 1024x768x24" nosetests -s --nologcapture -A 'not slow' -v --rednose --verbose 
 
