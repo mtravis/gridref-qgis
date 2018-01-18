@@ -63,9 +63,6 @@ class OSGBWidget(qtBaseClass, uiWidget):
         self._connect_signals(plugin)
 
     def _set_icons(self):
-        self.btnClose.setIcon(QgsApplication.getThemeIcon("/mIconClose.png"))
-        self.btnClose.setIconSize(QSize(18, 18))
-
         self.btnPointTool.setIcon(
             QgsApplication.getThemeIcon("/mActionWhatsThis.svg"))
         self.btnPointTool.setIconSize(QSize(18, 18))
