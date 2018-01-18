@@ -46,23 +46,23 @@ uiWidget, qtBaseClass = load_ui('grid_ref_widget')
 
 
 class OSGBWidget(qtBaseClass, uiWidget):
-    def __init__(self, iface, plugin, precision_field, parent=None):
+    def __init__(self, iface, plugin, parent=None):
         qtBaseClass.__init__(self)
         uiWidget.__init__(self, parent)
         self.setupUi(self)
         self.iface = iface
         self.marker = None
-        self.precision_field = precision_field
         self.tool = None
+
+        self.precisionField.setToolTip("Coordinates precision")
+        self.precisionField.setRange(0, 6)
+        self.precisionField.setValue(4)
 
         self._set_icons()
         self._add_validators()
         self._connect_signals(plugin)
 
     def _set_icons(self):
-        self.btnClose.setIcon(QgsApplication.getThemeIcon("/mIconClose.png"))
-        self.btnClose.setIconSize(QSize(18, 18))
-
         self.btnPointTool.setIcon(
             QgsApplication.getThemeIcon("/mActionWhatsThis.svg"))
         self.btnPointTool.setIconSize(QSize(18, 18))
@@ -77,31 +77,21 @@ class OSGBWidget(qtBaseClass, uiWidget):
         self.editLongLat.setValidator(QRegExpValidator(re, self))
 
     def _connect_signals(self, plugin):
-        self.btnClose.clicked.connect(plugin.actionRun.trigger)
         self.btnPointTool.clicked.connect(self.pickPoint)
         self.iface.mapCanvas().xyCoordinates.connect(self.trackCoords)
         self.editCoords.returnPressed.connect(self.setCoords)
         self.editLongLat.returnPressed.connect(self.setLongLat)
-        self.precision_field.valueChanged.connect(self.change_precision)
+        self.precisionField.valueChanged.connect(self.change_precision)
+        self.clipboardCheck.stateChanged.connect(self.change_copy_to_clipboard)
 
     def _setEditCooordsOnMouseMove(self, pt):
-        # dynamically determine the most sensible precision for the given scale
-        log_scale = math.log(self.iface.mapCanvas().scale()) / math.log(10)
-        if log_scale >= 6:
-            precision = 1000
-        elif log_scale >= 5:
-            precision = 100
-        elif log_scale >= 4:
-            precision = 10
-        else:
-            precision = 1
-
-        if self.tool:
-            precision = self.tool.precision
+        if not self.tool:
+            self.init_tool()
 
         try:
-            os_ref = xy_to_osgb(pt.x(), pt.y(), precision)
-        except GridRefException:
+            os_ref = xy_to_osgb(pt.x(), pt.y(), self.tool.precision)
+        except GridRefException as e:
+            print(e)
             os_ref = "[out of bounds]"
         self.editCoords.setText(os_ref)
 
@@ -122,7 +112,12 @@ class OSGBWidget(qtBaseClass, uiWidget):
 
     def change_precision(self):
         if self.tool:
-            self.tool.precision = pow(10, 5 - self.precision_field.value())
+            self.tool.precision = pow(10, 5 - self.precisionField.value())
+
+    def change_copy_to_clipboard(self):
+        if self.tool:
+            print(self.clipboardCheck.isChecked())
+            self.tool.clipboard_enable = self.clipboardCheck.isChecked()
 
     def trackCoords(self, pt):
         self._setEditCooordsOnMouseMove(pt)
@@ -156,8 +151,10 @@ class OSGBWidget(qtBaseClass, uiWidget):
               "The coordinates should be in format ##.##, ##.##")
 
     def pickPoint(self):
-        self.tool = PointTool(self.iface.mapCanvas(),
-                              pow(10, self.precision_field.value()))
+        self.init_tool()
+        self.iface.mapCanvas().setMapTool(self.tool)
+
+    def init_tool(self):
+        self.tool = PointTool(self.iface.mapCanvas(), pow(10, self.precisionField.value()), self.clipboardCheck.isChecked())
         self.change_precision()
         self.tool.setButton(self.btnPointTool)
-        self.iface.mapCanvas().setMapTool(self.tool)

@@ -24,10 +24,11 @@ from grid_ref_utils import reproject_point_to_4326
 
 
 class PointTool(QgsMapTool):
-    def __init__(self, canvas, precision):
+    def __init__(self, canvas, precision, copy_to_clipboard):
         QgsMapTool.__init__(self, canvas)
         self.canvas = canvas
         self.precision = precision
+        self.clipboard_enable = copy_to_clipboard
 
     def canvasReleaseEvent(self, event):
         x = event.pos().x()
@@ -38,9 +39,12 @@ class PointTool(QgsMapTool):
         if bbox.contains(point):
             os_ref = xy_to_osgb(point.x(), point.y(), self.precision)
             point_4326 = reproject_point_to_4326(self.canvas, point)
-            QApplication.clipboard().setText(os_ref)
-            msg = "Grid Ref: {}\n\nLong,Lat: {:.2f}, {:.2f}\n\n{}".format(
-                os_ref, point_4326.x(), point_4326.y(), "Copied to clipboard")
+
+            msg = "Grid Ref: {}\n\nLong,Lat: {:.2f}, {:.2f}\n".format(os_ref, point_4326.x(), point_4326.y())
+            if self.clipboard_enable:
+                QApplication.clipboard().setText(os_ref)
+                msg += "\nCopied to clipboard"
+
             QMessageBox.information(None, "OS Grid Reference", msg)
         else:
             QMessageBox.information(None, "OS Grid Reference",
