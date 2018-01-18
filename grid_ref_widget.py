@@ -155,6 +155,8 @@ class OSGBWidget(qtBaseClass, uiWidget):
         self.iface.mapCanvas().setMapTool(self.tool)
 
     def init_tool(self):
-        self.tool = PointTool(self.iface.mapCanvas(), pow(10, self.precisionField.value()), self.clipboardCheck.isChecked())
+        self.tool = PointTool(self.iface.mapCanvas(),
+                              pow(10, self.precisionField.value()),
+                              self.clipboardCheck.isChecked())
         self.change_precision()
         self.tool.setButton(self.btnPointTool)

@@ -40,7 +40,8 @@ class PointTool(QgsMapTool):
             os_ref = xy_to_osgb(point.x(), point.y(), self.precision)
             point_4326 = reproject_point_to_4326(self.canvas, point)
 
-            msg = "Grid Ref: {}\n\nLong,Lat: {:.2f}, {:.2f}\n".format(os_ref, point_4326.x(), point_4326.y())
+            msg = "Grid Ref: {}\n\nLong,Lat: {:.2f}, {:.2f}\n".format(
+                os_ref, point_4326.x(), point_4326.y())
             if self.clipboard_enable:
                 QApplication.clipboard().setText(os_ref)
                 msg += "\nCopied to clipboard"

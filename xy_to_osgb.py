@@ -121,7 +121,8 @@ def xy_to_osgb(easting, northing, precision=1000):
     elif precision == 1:
         coord_width = 5
 
-    format_string =  r'%s%s %0' + str(coord_width) + r'd %0' + str(coord_width) + r'd' if precision else r'%s%s %0'
+    format_string = (r'%s%s %0' + str(coord_width) + r'd %0' +
+                     str(coord_width) + r'd') if precision else r'%s%s %0'
     return format_string % (major_letter, minor_letter, ref_x, ref_y)
 
 
