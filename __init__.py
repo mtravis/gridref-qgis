@@ -3,7 +3,8 @@
 /***************************************************************************
  GridRef
                                  A QGIS plugin
- This plugin takes the coords of the map cnavas and translates to an Ordnance Survey Grid Reference e.g. SX4855
+ This plugin takes the coords of the map cnavas and translates to an Ordnance
+ Survey Grid Reference e.g. SX4855
                              -------------------
         begin                : 2014-08-21
         copyright            : (C) 2014 by Matt Travis

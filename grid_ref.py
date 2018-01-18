@@ -3,7 +3,8 @@
 /***************************************************************************
  GridRef
                                  A QGIS plugin
- This plugin takes the coords of the map cnavas and translates to an Ordnance Survey Grid Reference e.g. SX4855
+ This plugin takes the coords of the map cnavas and translates to an Ordnance
+ Survey Grid Reference e.g. SX4855
                               -------------------
         begin                : 2014-08-21
         git sha              : $Format:%H$
@@ -81,20 +82,18 @@ class GridRef:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('GridRef', message)
 
-
-    def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        shortcut=None,
-        checkable=None,
-        parent=None):
+    def add_action(self,
+                   icon_path,
+                   text,
+                   callback,
+                   enabled_flag=True,
+                   add_to_menu=True,
+                   add_to_toolbar=True,
+                   status_tip=None,
+                   whats_this=None,
+                   shortcut=None,
+                   checkable=None,
+                   parent=None):
         """Add a toolbar icon to the InaSAFE toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -190,11 +189,9 @@ class GridRef:
 
         del self.widget
 
-
     def run(self):
         """Run method that performs all the real work"""
         self.widget.setVisible(not self.widget.isVisible())
-
 
     def run_keyboard(self):
         """ This is the function called by the action assigned to a
